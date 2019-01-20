@@ -168,7 +168,7 @@ BBCMicrobit.discover((microbit) => {
       y.toFixed(1),
       z.toFixed(1),
     );
-    const arr = new Uint8Array([x, y, z]);
+    const arr = `[$[x}, ${y}, ${z}]`;
     microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
   });
 
