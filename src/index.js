@@ -1,4 +1,4 @@
-const BBCMicrobit = require('./lib/bbc-microbit');
+const BBCMicrobit = require('../lib/bbc-microbit');
 
 const BUTTON_VALUE_MAPPER = ['Not Pressed', 'Pressed', 'Long Press'];
 
@@ -37,4 +37,4 @@ BBCMicrobit.discover((microbit) => {
   });
 });
 
-module.exports = require('./lib/bbc-microbit');
+module.exports = require('../lib/bbc-microbit');
