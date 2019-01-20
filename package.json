@@ -1,31 +1,54 @@
 {
-  "name": "bbc-microbit",
+  "name": "PlayspotMicrobit",
   "version": "0.2.0",
-  "description": "Control a BBC micro:bit from Node.js using BLE ",
+  "description": "Connect a BBC micro:bit to a Playspot using BLE ",
   "main": "index.js",
   "scripts": {
-    "test": "jshint lib/. examples/. *.js"
+    "test": "jshint lib/. examples/. *.js",
+    "microbit": "node ./src/index.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sandeepmistry/node-bbc-microbit"
+    "url": "https://github.com/ComputeCycles/PlayspotMicrobit"
   },
   "keywords": [
     "micro:bit",
     "microbit",
     "bbc"
   ],
-  "author": "Sandeep Mistry <sandeep.mistry@gmail.com>",
+  "author": "Van Simmons <van.simmons@computecycles.com",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sandeepmistry/node-bbc-microbit/issues"
+    "url": "https://github.com/ComputeCycles/PlayspotMicrobit/issues"
   },
-  "homepage": "https://github.com/sandeepmistry/node-bbc-microbit",
+  "homepage": "https://github.com/ComputeCycles/PlayspotMicrobit",
   "dependencies": {
+    "delay": "^3.0.0",
+    "finalhandler": "^1.1.1",
+    "getmac": "^1.4.6",
+    "mqtt": "^2.18.3",
+    "request": "^2.88.0",
+    "serve-static": "^1.13.2",
+    "yarn": "^1.13.0",
     "noble-device": "^1.4.0"
   },
   "devDependencies": {
     "async": "^1.5.2",
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^10.0.1",
+    "babel-preset-flow": "^6.23.0",
+    "eslint": "^5.12.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.2",
+    "eslint-plugin-react": "^7.12.4",
+    "flow-bin": "^0.89.0",
     "jshint": "^2.9.2"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "node": true
+    }
   }
 }

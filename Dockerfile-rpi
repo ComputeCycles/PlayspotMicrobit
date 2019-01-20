@@ -1,0 +1,19 @@
+# PlayspotMicrobit
+#
+# VERSION 1.0.0
+
+FROM arm32v7/node:6
+MAINTAINER Van Simmons <van.simmons@computecycles.com>
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app/
+
+COPY ./ /usr/src/app/
+
+RUN apt-get update
+RUN npm install || true
+RUN apt-get autoremove
+
+EXPOSE 80
+
+ENTRYPOINT ["npm", "run", "microbit"]
