@@ -23,13 +23,8 @@
   },
   "homepage": "https://github.com/ComputeCycles/PlayspotMicrobit",
   "dependencies": {
-    "delay": "^3.0.0",
-    "finalhandler": "^1.1.1",
-    "getmac": "^1.4.6",
     "mqtt": "^2.18.3",
-    "request": "^2.88.0",
-    "serve-static": "^1.13.2",
-    "yarn": "^1.13.0",
+    "minilog": "3.1.0",
     "noble-device": "^1.4.0"
   },
   "devDependencies": {
