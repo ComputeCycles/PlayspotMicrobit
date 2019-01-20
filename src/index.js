@@ -1,10 +1,23 @@
+const Mqtt = require('mqtt');
 const BBCMicrobit = require('../lib/bbc-microbit');
 
 const BUTTON_VALUE_MAPPER = ['Not Pressed', 'Pressed', 'Long Press'];
+const BROKER_URL = 'mqtt://localhost';
+const client = Mqtt.connect(BROKER_URL);
+const microbits = {};
+
+function startMqtt() {
+  client.on('message', (topic, payload) => {
+    const filterIn = new RegExp('microbit/.*/in/status');
+    if (filterIn.test(topic)) {
+    }
+  });
+}
+
+startMqtt();
 
 // search for a micro:bit, to discover a particular micro:bit use:
 //  BBCMicrobit.discoverById(id, callback); or BBCMicrobit.discoverByAddress(id, callback);
-
 console.log('Scanning for microbit');
 BBCMicrobit.discover((microbit) => {
   console.log('\tdiscovered microbit: id = %s, address = %s', microbit.id, microbit.address);
