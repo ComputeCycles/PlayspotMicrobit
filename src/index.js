@@ -1,10 +1,13 @@
 const mqtt = require('mqtt');
-const log = require('minilog')('microbit');
-require('minilog').enable();
+const minilog = require('minilog') 
 const BBCMicrobit = require('../lib/bbc-microbit');
+const util = require('util');
 
+const log = minilog('microbit');
 const BUTTON_VALUE_MAPPER = ['Not Pressed', 'Pressed', 'Long Press'];
 const BROKER_URL = 'mqtt://localhost';
+
+minilog.enable();
 
 class PlayspotMicrobit {
   /**
@@ -45,6 +48,8 @@ class PlayspotMicrobit {
     this.onConnect = () => {
       log.info('onConnect fired');
       // subscribe to all status, radar detection and touch events
+      clearTimeout(this.performConnectTimeout);
+      delete this.performConnectTimeout;
       this.client.subscribe('microbit/+/in/status');
     };
 
@@ -143,7 +148,7 @@ class PlayspotMicrobit {
   }
 }
 
-const microbitManager = PlayspotMicrobit();
+const microbitManager = new PlayspotMicrobit();
 microbitManager.connect();
 
 // search for a micro:bit, to discover a particular micro:bit use:
@@ -154,7 +159,6 @@ BBCMicrobit.discover((microbit) => {
 
   microbit.on('disconnect', () => {
     log('\tmicrobit disconnected!');
-    process.exit(0);
   });
 
   microbit.on('buttonAChange', (value) => {
@@ -169,8 +173,10 @@ BBCMicrobit.discover((microbit) => {
   microbit.connectAndSetUp(() => {
     log('\tconnected to microbit');
     log('notifying world of status change');
-    microbitManager.microbits[microbit.id] = microbit;
-    microbitManager.client.publish('microbit/all/out/status', microbitManager.microbits);
+    microbitManager.microbits[microbit.id] = microbit.address;
+    let status = util.inspect(microbitManager.microbits);  
+    log(`microbits = ${status}`);  
+    microbitManager.client.publish('microbit/all/out/status', status);
     log('\tnotified world of status change');
     log('subscribing to buttons');
     // to only subscribe to one button use:
