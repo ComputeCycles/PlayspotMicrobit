@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
-const minilog = require('minilog') 
-const BBCMicrobit = require('../lib/bbc-microbit');
+const minilog = require('minilog');
 const util = require('util');
+const BBCMicrobit = require('../lib/bbc-microbit');
 
 const log = minilog('microbit');
 const BUTTON_VALUE_MAPPER = ['Not Pressed', 'Pressed', 'Long Press'];
@@ -161,12 +161,27 @@ BBCMicrobit.discover((microbit) => {
     log('\tmicrobit disconnected!');
   });
 
+  microbit.on('accelerometerChange', (x, y, z) => {
+    log(
+      '\ton -> accelerometer change: accelerometer = %d %d %d G',
+      x.toFixed(1),
+      y.toFixed(1),
+      z.toFixed(1),
+    );
+    const arr = new Uint8Array([x, y, z]);
+    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
+  });
+
   microbit.on('buttonAChange', (value) => {
     log('\ton -> button A change: ', BUTTON_VALUE_MAPPER[value]);
+    const arr = new Uint8Array([value]);
+    microbitManager.client.publish(`microbit/${microbit.id}/out/button/a`, arr);
   });
 
   microbit.on('buttonBChange', (value) => {
     log('\ton -> button B change: ', BUTTON_VALUE_MAPPER[value]);
+    const arr = new Uint8Array([value]);
+    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
   });
 
   log('connecting to microbit');
@@ -174,8 +189,8 @@ BBCMicrobit.discover((microbit) => {
     log('\tconnected to microbit');
     log('notifying world of status change');
     microbitManager.microbits[microbit.id] = microbit.address;
-    let status = util.inspect(microbitManager.microbits);  
-    log(`microbits = ${status}`);  
+    const status = util.inspect(microbitManager.microbits);
+    log(`microbits = ${status}`);
     microbitManager.client.publish('microbit/all/out/status', status);
     log('\tnotified world of status change');
     log('subscribing to buttons');
@@ -185,6 +200,17 @@ BBCMicrobit.discover((microbit) => {
     //   microbit.subscribeButtonB();
     microbit.subscribeButtons(() => {
       log('\tsubscribed to buttons');
+    });
+
+    const period = 160; // ms
+    log('setting accelerometer period to %d ms', period);
+    microbit.writeAccelerometerPeriod(period, () => {
+      log('\taccelerometer period set');
+
+      log('subscribing to accelerometer');
+      microbit.subscribeAccelerometer(() => {
+        log('\tsubscribed to accelerometer');
+      });
     });
   });
 });
