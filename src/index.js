@@ -155,7 +155,7 @@ microbitManager.connect();
 //  BBCMicrobit.discoverById(id, callback); or BBCMicrobit.discoverByAddress(id, callback);
 log('Scanning for microbit');
 BBCMicrobit.discover((microbit) => {
-  log(`\tdiscovered microbit`);
+  log('\tdiscovered microbit');
   microbit.on('disconnect', () => {
     log(`\tmicrobit: ${microbit.name} disconnected!`);
     delete microbitManager.microbits(microbit.id);
@@ -164,29 +164,28 @@ BBCMicrobit.discover((microbit) => {
   });
 
   microbit.on('accelerometerChange', (x, y, z) => {
-      if (
+    if (
       x !== microbitManager.microbits[microbit.name].accelerometer.x
       || y !== microbitManager.microbits[microbit.name].accelerometer.y
       || z !== microbitManager.microbits[microbit.name].accelerometer.z
     ) {
-      log(
-          `\ton -> accelerometer change: x: ${x.toFixed(1)}, y: ${y.toFixed(1)}, z: ${z.toFixed(1)}`,
-      );
+      log(`\ton -> accelerometer change: x: ${x}, y: ${y}, z: ${z}`);
       microbitManager.microbits[microbit.name].accelerometer = { x, y, z };
-      microbitManager.client.publish(`microbit/${microbit.id}/out/accelerometer`, Buffer.from([x, y, z]));
+      microbitManager.client.publish(
+        `microbit/${microbit.id}/out/accelerometer`,
+        Buffer.from([x, y, z]),
+      );
     }
   });
 
   microbit.on('buttonAChange', (value) => {
     log('\ton -> button A change: ', BUTTON_VALUE_MAPPER[value]);
-    const arr = new Buffer.from([value]);
-    microbitManager.client.publish(`microbit/${microbit.id}/out/button/a`, arr);
+    microbitManager.client.publish(`microbit/${microbit.id}/out/button/a`, Buffer.from([value]));
   });
 
   microbit.on('buttonBChange', (value) => {
     log('\ton -> button B change: ', BUTTON_VALUE_MAPPER[value]);
-    const arr = new Buffer.from([value]);
-    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
+    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, Buffer.from([value]));
   });
 
   log('connecting to microbit');
@@ -208,7 +207,7 @@ BBCMicrobit.discover((microbit) => {
     };
     const status = util.inspect(microbitManager.microbits);
     microbitManager.client.publish('microbit/all/out/status', status);
-    log('\tnotified world of status change');
+
     log('subscribing to buttons');
     microbit.subscribeButtons(() => {
       log('\tsubscribed to buttons');
@@ -224,6 +223,8 @@ BBCMicrobit.discover((microbit) => {
         log('\tsubscribed to accelerometer');
       });
     });
+
+    microbit.writeLedText(microbit.name, () => {});
   });
 });
 
