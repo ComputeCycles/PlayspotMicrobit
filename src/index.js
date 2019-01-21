@@ -27,14 +27,18 @@ class PlayspotMicrobit {
      */
     this.microbits = {};
 
+    const STATUS_FILTER = new RegExp('microbit/.*/in/status');
+    const TEXT_FILTER = new RegExp('microbit/.*/in/text');
+
     this.onMessage = (topic, payload) => {
       log.info(`onMessage fired for topic: ${topic}, payload: ${payload}`);
-      const filterIn = new RegExp('microbit/.*/in/status');
-      if (filterIn.test(topic)) {
+      const t = topic.split('/');
+      if (STATUS_FILTER.test(topic)) {
         // prod all devices to post their status
-        const t = topic.split('/');
         if (t[1] === 'all') this.client.publish('microbit/all/out/status', this.microbits);
         else this.client.publish(`microbit/${t[1]}/out/status`, this.microbits[t[1]]);
+      } else if (TEXT_FILTER.test(topic) && this.microbits[t[1]]) {
+        this.microbits[t[1]].microbit.writeLedText(payload);
       }
     };
 
@@ -192,9 +196,7 @@ BBCMicrobit.discover((microbit) => {
   microbit.connectAndSetUp(() => {
     log(`\tconnected to microbit: ${microbit.name}`);
     microbitManager.microbits[microbit.name] = {
-      address: microbit.address,
-      id: microbit.id,
-      name: microbit.name,
+      microbit,
       buttons: {
         a: 0,
         b: 0,
@@ -224,7 +226,11 @@ BBCMicrobit.discover((microbit) => {
       });
     });
 
-    microbit.writeLedText(microbit.name, () => {});
+    microbit.writeLedText(microbit.name, () => {
+      microbit.writeLedText(microbit.name, () => {
+        microbit.writeLedText(microbit.name, () => {});
+      });
+    });
   });
 });
 
