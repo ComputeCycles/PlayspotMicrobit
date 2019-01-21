@@ -35,8 +35,14 @@ class PlayspotMicrobit {
       const t = topic.split('/');
       if (STATUS_FILTER.test(topic)) {
         // prod all devices to post their status
-        if (t[1] === 'all') this.client.publish('microbit/all/out/status', this.microbits);
-        else this.client.publish(`microbit/${t[1]}/out/status`, this.microbits[t[1]]);
+          if (t[1] === 'all') {
+	      const status = JSON.stringify(this.microbits);
+	      this.client.publish('microbit/all/out/status', status);
+	  }
+          else {
+	      const status = JSON.stringify(this.microbits[t[1]]) || '';
+	      this.client.publish(`microbit/${t[1]}/out/status`, status);
+	  }
       } else if (TEXT_FILTER.test(topic) && this.microbits[t[1]]) {
         this.microbits[t[1]].microbit.writeLedText(payload);
       }
@@ -163,7 +169,7 @@ BBCMicrobit.discover((microbit) => {
   microbit.on('disconnect', () => {
     log(`\tmicrobit: ${microbit.name} disconnected!`);
     delete microbitManager.microbits(microbit.id);
-    const status = util.inspect(microbitManager.microbits);
+    const status = JSON.stringify(microbitManager.microbits);
     microbitManager.client.publish('microbit/all/out/status', status);
   });
 
@@ -173,7 +179,6 @@ BBCMicrobit.discover((microbit) => {
       || y !== microbitManager.microbits[microbit.name].accelerometer.y
       || z !== microbitManager.microbits[microbit.name].accelerometer.z
     ) {
-      log(`\ton -> accelerometer change: x: ${x}, y: ${y}, z: ${z}`);
       microbitManager.microbits[microbit.name].accelerometer = { x, y, z };
       microbitManager.client.publish(
         `microbit/${microbit.id}/out/accelerometer`,
@@ -183,20 +188,18 @@ BBCMicrobit.discover((microbit) => {
   });
 
   microbit.on('buttonAChange', (value) => {
-    log('\ton -> button A change: ', BUTTON_VALUE_MAPPER[value]);
-    microbitManager.client.publish(`microbit/${microbit.id}/out/button/a`, Buffer.from([value]));
+    microbitManager.client.publish(`microbit/${microbit.name}/out/button/a`, Buffer.from([value]));
   });
 
   microbit.on('buttonBChange', (value) => {
-    log('\ton -> button B change: ', BUTTON_VALUE_MAPPER[value]);
-    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, Buffer.from([value]));
+    microbitManager.client.publish(`microbit/${microbit.name}/out/button/b`, Buffer.from([value]));
   });
 
   log('connecting to microbit');
   microbit.connectAndSetUp(() => {
     log(`\tconnected to microbit: ${microbit.name}`);
     microbitManager.microbits[microbit.name] = {
-      microbit,
+      name: microbit.name,
       buttons: {
         a: 0,
         b: 0,
@@ -207,7 +210,8 @@ BBCMicrobit.discover((microbit) => {
         z: 1.0,
       },
     };
-    const status = util.inspect(microbitManager.microbits);
+    const status = JSON.stringify(microbitManager.microbits);
+    log(`sending status: ${status}`);
     microbitManager.client.publish('microbit/all/out/status', status);
 
     log('subscribing to buttons');
@@ -226,11 +230,7 @@ BBCMicrobit.discover((microbit) => {
       });
     });
 
-    microbit.writeLedText(microbit.name, () => {
-      microbit.writeLedText(microbit.name, () => {
-        microbit.writeLedText(microbit.name, () => {});
-      });
-    });
+    microbit.writeLedText(microbit.name);
   });
 });
 
