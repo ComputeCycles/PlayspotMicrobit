@@ -193,10 +193,10 @@ BBCMicrobit.discover((microbit) => {
   log('connecting to microbit');
   microbit.connectAndSetUp(() => {
     log('\tconnected to microbit');
-    microbitManager.microbits[name] = {
+    microbitManager.microbits[microbit.name] = {
       address: microbit.address,
       id: microbit.id,
-      name,
+      name: microbit.name,
       buttons: {
         a: 0,
         b: 0,
