@@ -155,21 +155,36 @@ microbitManager.connect();
 //  BBCMicrobit.discoverById(id, callback); or BBCMicrobit.discoverByAddress(id, callback);
 log('Scanning for microbit');
 BBCMicrobit.discover((microbit) => {
-  log('\tdiscovered microbit: id = %s, address = %s', microbit.id, microbit.address);
-
-  microbit.on('disconnect', () => {
-    log('\tmicrobit disconnected!');
+  log(`\tdiscovered microbit: ${microbit._peripheral.advertisement.localName}`);
+    var name = 'unknown';
+    let name1 = microbit._peripheral.advertisement.localName.split('[');
+    if (name1.length > 1) {
+	let name2 = name1[1].split(']');
+	name = name2[0];
+    }
+  log(`\tmicrobit shortname: ${name}`);
+    microbit.name = name;
+    microbit.on('disconnect', () => {
+      log(`\tmicrobit: ${name} disconnected!`);
+      delete microbitsManager.microbits(microbit.id);
+    const status = util.inspect(microbitManager.microbits);
+    microbitManager.client.publish('microbit/all/out/status', status);
   });
 
-  microbit.on('accelerometerChange', (x, y, z) => {
-    log(
+    microbit.on('accelerometerChange', (x, y, z) => {
+	if (x !== microbitManager.microbits[microbit.name].accelerometer.x ||
+	    y !== microbitManager.microbits[microbit.name].accelerometer.y ||
+	    z !== microbitManager.microbits[microbit.name].accelerometer.z ) {
+	    log(
       '\ton -> accelerometer change: accelerometer = %d %d %d G',
       x.toFixed(1),
       y.toFixed(1),
       z.toFixed(1),
     );
     const arr = `[$[x}, ${y}, ${z}]`;
-    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
+	    microbitManager.microbits[microbit.name].accelerometer = { 'x': x, 'y': y, 'z': z};
+	    microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
+	}
   });
 
   microbit.on('buttonAChange', (value) => {
@@ -187,22 +202,29 @@ BBCMicrobit.discover((microbit) => {
   log('connecting to microbit');
   microbit.connectAndSetUp(() => {
     log('\tconnected to microbit');
-    log('notifying world of status change');
-    microbitManager.microbits[microbit.id] = microbit.address;
+      microbitManager.microbits[name] = {
+	  address: microbit.address,
+	  id: microbit.id,
+	  name: name,
+	  buttons: {
+	      a: 0,
+	      b: 0
+	  },
+	  accelerometer: {
+	      x: 0.0,
+	      y: 0.0,
+	      z: 1.0
+	  }
+      };
     const status = util.inspect(microbitManager.microbits);
-    log(`microbits = ${status}`);
     microbitManager.client.publish('microbit/all/out/status', status);
     log('\tnotified world of status change');
     log('subscribing to buttons');
-    // to only subscribe to one button use:
-    //   microbit.subscribeButtonA();
-    // or
-    //   microbit.subscribeButtonB();
     microbit.subscribeButtons(() => {
       log('\tsubscribed to buttons');
     });
 
-    const period = 160; // ms
+    const period = 200; // ms
     log('setting accelerometer period to %d ms', period);
     microbit.writeAccelerometerPeriod(period, () => {
       log('\taccelerometer period set');
