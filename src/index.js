@@ -155,7 +155,7 @@ microbitManager.connect();
 //  BBCMicrobit.discoverById(id, callback); or BBCMicrobit.discoverByAddress(id, callback);
 log('Scanning for microbit');
 BBCMicrobit.discover((microbit) => {
-  log(`\tdiscovered microbit: ${microbit.name}`);
+  log(`\tdiscovered microbit`);
   microbit.on('disconnect', () => {
     log(`\tmicrobit: ${microbit.name} disconnected!`);
     delete microbitManager.microbits(microbit.id);
@@ -164,35 +164,34 @@ BBCMicrobit.discover((microbit) => {
   });
 
   microbit.on('accelerometerChange', (x, y, z) => {
-    if (
+      if (
       x !== microbitManager.microbits[microbit.name].accelerometer.x
       || y !== microbitManager.microbits[microbit.name].accelerometer.y
       || z !== microbitManager.microbits[microbit.name].accelerometer.z
     ) {
       log(
-        `\ton -> accelerometer change: x: ${x.toFixed(1)}, y: ${y.toFixed(1)}, z: ${z.toFixed(1)}`,
+          `\ton -> accelerometer change: x: ${x.toFixed(1)}, y: ${y.toFixed(1)}, z: ${z.toFixed(1)}`,
       );
-      const arr = `[${x}, ${y}, ${z}]`;
       microbitManager.microbits[microbit.name].accelerometer = { x, y, z };
-      microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
+      microbitManager.client.publish(`microbit/${microbit.id}/out/accelerometer`, Buffer.from([x, y, z]));
     }
   });
 
   microbit.on('buttonAChange', (value) => {
     log('\ton -> button A change: ', BUTTON_VALUE_MAPPER[value]);
-    const arr = new Uint8Array([value]);
+    const arr = new Buffer.from([value]);
     microbitManager.client.publish(`microbit/${microbit.id}/out/button/a`, arr);
   });
 
   microbit.on('buttonBChange', (value) => {
     log('\ton -> button B change: ', BUTTON_VALUE_MAPPER[value]);
-    const arr = new Uint8Array([value]);
+    const arr = new Buffer.from([value]);
     microbitManager.client.publish(`microbit/${microbit.id}/out/button/b`, arr);
   });
 
   log('connecting to microbit');
   microbit.connectAndSetUp(() => {
-    log('\tconnected to microbit');
+    log(`\tconnected to microbit: ${microbit.name}`);
     microbitManager.microbits[microbit.name] = {
       address: microbit.address,
       id: microbit.id,
